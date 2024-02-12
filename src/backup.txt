@@ -1,0 +1,58 @@
+const service = require("./todo.service");
+
+function idIsValid(req, res, next) {
+  if (isNaN(req.params.todo_id, 10)) {
+    return res.status(404).json({
+      error: { message: `Invalid id` }
+    });
+  } else {
+    next();
+  }
+}
+
+async function update(req, res) {
+  const { todo_id } = req.params;
+  const { title, completed } = req.body;
+  const todoToUpdate = { title, completed };
+
+  const numberOfValues = Object.values(todoToUpdate).filter(Boolean).length;
+  if (numberOfValues === 0)
+    return res.status(400).json({
+      error: {
+        message: `Request body must content either 'title' or 'completed'`
+      }
+    });
+
+  const updated = await service.update(todo_id, todoToUpdate);
+  res.status(200).json(updated[0]);
+}
+
+async function destroy(req, res) {
+  const { todo_id } = req.params;
+  await service.destroy(todo_id);
+  res.status(204).end();
+}
+
+/** Implement the list function */
+
+/** Implement the read function */
+
+/** Implement the create function */
+
+module.exports = {
+  update: [idIsValid, update],
+  destroy: [idIsValid, destroy]
+};
+------------------------
+const router = require("express").Router();
+const controller = require("./todo.controller");
+
+router.route("/").get(/* code goes here */).post(/* code goes here */);
+
+router
+  .route("/:todo_id")
+  .get(/* code goes here */)
+  .patch(controller.update)
+  .delete(controller.destroy);
+
+module.exports = router;
